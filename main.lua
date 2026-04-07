@@ -1,6 +1,5 @@
 -- =======================================================
 -- PINATHUB -
--- Auto Parry for Blade Ball | Mobile/Desktop Friendly
 -- =======================================================
 
 local Players = game:GetService("Players")
