@@ -15,46 +15,32 @@ local Player = Players.LocalPlayer
 local UIS = UserInputService
 
 -- =======================================================
--- HWID PROTECTION & ANTI-BAN SYSTEM
+-- HWID PROTECTION & ANTI-BAN SYSTEM (FINAL)
 -- =======================================================
 
--- KONFIGURASI - GANTI DENGAN URL VERCEL ANDA!
-local API_URL = "https://pinatbladeball-peotect.vercel.app/api/bladeball.js" -- <-- GANTI INI
+local API_URL = "https://pinatbladeball-protect.vercel.app/api/bladeball.js" 
 
--- Fungsi untuk mendapatkan HWID unik perangkat
+-- 1. HWID Tanpa Base64
 local function getHWID()
-    local success, result = pcall(function()
-        local userId = tostring(Player.UserId)
-        local gameId = tostring(game.GameId)
-        local platform = tostring(UserInputService:GetPlatform())
-        local touchEnabled = tostring(UserInputService.TouchEnabled)
-        local keyboardEnabled = tostring(UserInputService.KeyboardEnabled)
-        local mouseEnabled = tostring(UserInputService.MouseEnabled)
-        
-        local rawHWID = userId .. gameId .. platform .. touchEnabled .. keyboardEnabled .. mouseEnabled .. tostring(os.time() % 86400)
-        return HttpService:GenerateGUID(false) .. "_" .. HttpService:Base64Encode(rawHWID):sub(1, 30)
-    end)
-    
-    return success and result or "unknown_" .. tostring(math.random(1, 999999))
+    local userId = tostring(Player.UserId)
+    local platform = tostring(UserInputService:GetPlatform())
+    return "PINAT_" .. userId .. "_" .. platform:sub(1, 5)
 end
 
--- Fungsi untuk generate token salted (sama persis dengan backend)
+-- 2. Token Tanpa Base64 (Sederhana tapi efektif)
 local function generateSaltedToken()
     local utcHour = math.floor(os.time() / 3600)
-    local rawString = tostring(utcHour) .. "PINAT_SALT_77"
-    return HttpService:Base64Encode(rawString)
+    return "SALT_" .. tostring(utcHour) .. "_PINAT_77"
 end
 
--- Fungsi untuk verifikasi ke server
+-- 3. Fungsi Verifikasi (Pake Headers biar lebih Pro)
 local function verifyWithServer()
     local hwid = getHWID()
     local token = generateSaltedToken()
     
     local headers = {
-        ["Content-Type"] = "application/json",
         ["x-hwid"] = hwid,
-        ["x-pinat-auth"] = token,
-        ["User-Agent"] = "Roblox/" .. tostring(game.PlaceId)
+        ["x-pinat-auth"] = token
     }
     
     local success, response = pcall(function()
@@ -66,19 +52,21 @@ local function verifyWithServer()
         })
     end)
     
+    -- Jika koneksi gagal (Internet mati/Vercel Down)
     if not success then
         warn("[PinatHub] Connection failed - Check your internet")
-        return false
+        return false -- Ganti jadi true jika ingin bypass saat offline
     end
     
+    -- Cek Status Code dari Express/Vercel lu
     if response.Success and response.StatusCode == 200 then
-        print("[PinatHub] HWID Verified Successfully | HWID: " .. hwid:sub(1, 20) .. "...")
+        print("[PinatHub] Verified! Welcome: " .. hwid)
         return true
-    elseif response.StatusCode == 403 or response.StatusCode == 404 then
-        warn("[PinatHub] DEVICE BANNED! HWID: " .. hwid:sub(1, 20) .. "...")
+    elseif response.StatusCode == 403 then
+        warn("[PinatHub] DEVICE BANNED!")
         return false
     else
-        warn("[PinatHub] Unknown response: " .. tostring(response.StatusCode))
+        warn("[PinatHub] Server error: " .. tostring(response.StatusCode))
         return false
     end
 end
