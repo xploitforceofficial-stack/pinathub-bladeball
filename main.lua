@@ -18,7 +18,7 @@ local UIS = UserInputService
 -- HWID PROTECTION & ANTI-BAN SYSTEM (FINAL)
 -- =======================================================
 
-local API_URL = "https://pinatbladeball-protect.vercel.app/api/bladeball.js" 
+local API_URL = "https://pinatbladeball-peotect.vercel.app/api/bladeball.js" 
 
 -- 1. HWID Tanpa Base64
 local function getHWID()
