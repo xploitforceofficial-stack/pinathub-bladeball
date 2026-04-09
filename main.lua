@@ -715,7 +715,7 @@ CommunityTab:Space()
 local CreditSection = CommunityTab:Section({ Title = "Credits" })
 
 CreditSection:Paragraph({
-    Title = "PinatHub - AELOE TRIPLE",
+    Title = "PinatHub",
     Desc = "Blade Ball Auto Parry Script\nVersion 3.0\nCreated by @viunze"
 })
 
